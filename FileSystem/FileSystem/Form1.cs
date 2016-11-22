@@ -21,15 +21,38 @@ namespace FileSystem
             openFileName = "";
             emptyblock = 0;
 
-            //初始化fat表
+            ResumeFat();
+            ResumeDictionary();
+
+        }
+
+        //fat表项
+        public struct Block
+        {
+            public bool busy;
+            public bool isStart;
+            public string Name;
+            public int next;
+        }
+
+        static string path;
+        static string newPathName;
+        static string newFileName;
+        static string openFileName;
+        static Block[] Fat = new Block[32];
+        static int emptyblock;//磁盘空闲块
+
+        //初始化fat表
+        private void ResumeFat()
+        {
             string fatbin;
             StreamReader srfat = new StreamReader("fat.bin");
             for (int i = 0; i < 32; i++)
             {
                 fatbin = srfat.ReadLine();
-                if(fatbin==null)
+                if (fatbin == null)
                 {
-                    for(int k=0;k<32;k++)
+                    for (int k = 0; k < 32; k++)
                     {
                         Fat[i].Name = "";
                         Fat[i].busy = false;
@@ -39,7 +62,7 @@ namespace FileSystem
                     emptyblock = 32;
                     break;
                 }
-                if(fatbin=="0 0 -1 -1")
+                if (fatbin == "0 0 -1 -1")
                 {
                     Fat[i].Name = "";
                     Fat[i].busy = false;
@@ -65,7 +88,11 @@ namespace FileSystem
             swfat.Close();
             swfat.Dispose();
 
-            //根据保存结果恢复之前创建的目录
+        }
+
+        //根据保存结果恢复之前创建的目录
+        private void ResumeDictionary()
+        {
             DirectoryInfo dir = new DirectoryInfo(Application.StartupPath).Parent.Parent;
             path = dir.FullName;
             StreamReader sr = new StreamReader("root.bin");
@@ -82,23 +109,23 @@ namespace FileSystem
                 if (b[0] == "")
                     break;
                 if (b[1] == "0")
-                { 
+                {
                     tmp.size = 0;
                     tmp.BackColor = Color.Yellow;
                 }
                 else if (b[1] == "1")
-                { 
+                {
                     FileInfo fi = new FileInfo(name);
                     tmp.size = (Int32)fi.Length;
-                    
+
                 }
                 else
                     break;
                 parent = b[2];
-                
+
                 //TreeNode tmp;
                 //tmp = new TreeNode();
-                
+
                 tmp.Text = name;
                 tmp.ToolTipText = b[1];
                 FindTreeViewNode(treeView1.Nodes, parent).Nodes.Add(tmp);
@@ -110,22 +137,6 @@ namespace FileSystem
             sw.Close();
             sw.Dispose();
         }
-
-        //fat表项
-        public struct Block
-        {
-            public bool busy;
-            public bool isStart;
-            public string Name;
-            public int next;
-        }
-
-        static string path;
-        static string newPathName;
-        static string newFileName;
-        static string openFileName;
-        static Block[] Fat = new Block[32];
-        static int emptyblock;//磁盘空闲块
 
         //目录节点
         public class fileNode:TreeNode
@@ -572,7 +583,7 @@ namespace FileSystem
 
         private void buttonsearch_Click(object sender, EventArgs e)
         {
-            treeView1.SelectedNode=FindFile(treeView1.SelectedNode.Nodes,textBoxSearch.Text);
+            treeView1.SelectedNode=FindFile(treeView1.Nodes,textBoxSearch.Text);
             if (treeView1.SelectedNode != null)
             {
                 MessageBox.Show(treeView1.SelectedNode.FullPath.ToString(), "result",
@@ -583,6 +594,7 @@ namespace FileSystem
             {
                 MessageBox.Show("未在该目录下搜索到文件", "result",
                MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             }
         }
     }
