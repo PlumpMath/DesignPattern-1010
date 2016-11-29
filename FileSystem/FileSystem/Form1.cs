@@ -19,76 +19,80 @@ namespace FileSystem
             newFileName = "";
             newPathName = "";
             openFileName = "";
-            emptyblock = 0;
 
-            ResumeFat();
+
+            MemManager.ResumeFat();
+            //ResumeFat();
             ResumeDictionary();
 
         }
 
         //fat表项
-        public struct Block
-        {
-            public bool busy;
-            public bool isStart;
-            public string Name;
-            public int next;
-        }
+        //public struct Block
+        //{
+        //    public bool busy;
+        //    public bool isStart;
+        //    public string Name;
+        //    public int next;
+        //}
+
+        MemoryManager MemManager = new MemoryManager(32, 32);
 
         static string path;
         static string newPathName;
         static string newFileName;
         static string openFileName;
-        static Block[] Fat = new Block[32];
-        static int emptyblock;//磁盘空闲块
+        //static Block[] Fat = new Block[32];
+        //static int emptyblock;//磁盘空闲块
 
         //初始化fat表
-        private void ResumeFat()
-        {
-            string fatbin;
-            StreamReader srfat = new StreamReader("fat.bin");
-            for (int i = 0; i < 32; i++)
-            {
-                fatbin = srfat.ReadLine();
-                if (fatbin == null)
-                {
-                    for (int k = 0; k < 32; k++)
-                    {
-                        Fat[i].Name = "";
-                        Fat[i].busy = false;
-                        Fat[i].next = -1;
-                        Fat[i].isStart = false;
-                    }
-                    emptyblock = 32;
-                    break;
-                }
-                if (fatbin == "0 0 -1 -1")
-                {
-                    Fat[i].Name = "";
-                    Fat[i].busy = false;
-                    Fat[i].next = -1;
-                    Fat[i].isStart = false;
-                    emptyblock++;
-                }
-                else
-                {
-                    var a = fatbin.Split(' ');
-                    Fat[i].next = Convert.ToInt32(a[2]);
-                    Fat[i].busy = true;
-                    Fat[i].Name = a[1];
-                    if (a[3] == "0")
-                        Fat[i].isStart = false;
-                    else
-                        Fat[i].isStart = true;
-                }
-            }
-            srfat.Close();
-            srfat.Dispose();
-            StreamWriter swfat = new StreamWriter("fat.bin");
-            swfat.Close();
-            swfat.Dispose();
+        //private void ResumeFat()
+        //{
+        //    string fatbin;
+        //    StreamReader srfat = new StreamReader("fat.bin");
+        //    for (int i = 0; i < 32; i++)
+        //    {
+        //        fatbin = srfat.ReadLine();
+        //        if (fatbin == null)
+        //        {
+        //            for (int k = 0; k < 32; k++)
+        //            {
+        //                Fat[i].Name = "";
+        //                Fat[i].busy = false;
+        //                Fat[i].next = -1;
+        //                Fat[i].isStart = false;
+        //            }
+        //            emptyblock = 32;
+        //            break;
+        //        }
+        //        if (fatbin == "0 0 -1 -1")
+        //        {
+        //            Fat[i].Name = "";
+        //            Fat[i].busy = false;
+        //            Fat[i].next = -1;
+        //            Fat[i].isStart = false;
+        //            emptyblock++;
+        //        }
+        //        else
+        //        {
+        //            var a = fatbin.Split(' ');
+        //            Fat[i].next = Convert.ToInt32(a[2]);
+        //            Fat[i].busy = true;
+        //            Fat[i].Name = a[1];
+        //            if (a[3] == "0")
+        //                Fat[i].isStart = false;
+        //            else
+        //                Fat[i].isStart = true;
+        //        }
+        //    }
+        //    srfat.Close();
+        //    srfat.Dispose();
+        //    StreamWriter swfat = new StreamWriter("fat.bin");
+        //    swfat.Close();
+        //    swfat.Dispose();
 
-        }
+        //}
+
 
         //根据保存结果恢复之前创建的目录
         private void ResumeDictionary()
@@ -199,27 +203,28 @@ namespace FileSystem
         {
             if (node == null)
                 return;
-            foreach(TreeNode n in node)
+            foreach (TreeNode n in node)
             {
-                if(n.ToolTipText=="1")
+                if (n.ToolTipText == "1")
                 {
-                    int now = FindinFat(n.Text);
-                    int pre = now;
-                    while(Fat[now].next != -1)
-                    {
-                        pre = now;
-                        now=Fat[now].next;
-                        Fat[pre].isStart = false;
-                        Fat[pre].Name = "";
-                        Fat[pre].next = -1;
-                        Fat[pre].busy = false;
-                        emptyblock++;
-                    }
-                    Fat[now].isStart = false;
-                    Fat[now].Name = "";
-                    Fat[now].next = -1;
-                    Fat[now].busy = false;
-                    emptyblock++;
+                    //int now = FindinFat(n.Text);
+                    //int pre = now;
+                    //while (Fat[now].next != -1)
+                    //{
+                    //    pre = now;
+                    //    now = Fat[now].next;
+                    //    Fat[pre].isStart = false;
+                    //    Fat[pre].Name = "";
+                    //    Fat[pre].next = -1;
+                    //    Fat[pre].busy = false;
+                    //    emptyblock++;
+                    //}
+                    //Fat[now].isStart = false;
+                    //Fat[now].Name = "";
+                    //Fat[now].next = -1;
+                    //Fat[now].busy = false;
+                    //emptyblock++;
+                    MemManager.ReleaseFile(n.Text);
                     File.Delete(n.Text);
                 }
                 else
@@ -230,21 +235,23 @@ namespace FileSystem
         }
 
         //格式化
+
         public void DeleteRootFile()
         {
             //初始化fat表
-            for (int i = 0; i < 32; i++)
-            {
-                if(Fat[i].isStart)
-                    File.Delete(Fat[i].Name);
-                Fat[i].busy = false;
-                Fat[i].isStart = false;
-                Fat[i].Name = "";
-                Fat[i].next = -1;
-                Fat[i].isStart = false;
+            //for (int i = 0; i < 32; i++)
+            //{
+            //    if(Fat[i].isStart)
+            //        File.Delete(Fat[i].Name);
+            //    Fat[i].busy = false;
+            //    Fat[i].isStart = false;
+            //    Fat[i].Name = "";
+            //    Fat[i].next = -1;
+            //    Fat[i].isStart = false;
                 
-            }
-            emptyblock = 32;
+            //}
+            //emptyblock = 32;
+            MemManager.InitFat();
             treeView1.Nodes.Clear();
             TreeNode root = new TreeNode();
             root.Text = "root";
@@ -276,88 +283,89 @@ namespace FileSystem
         }
     
         //存储磁盘fat表
-        public void SaveFat()
-        {
-            for (int i = 0; i < 32; i++)
-            {
-                FileStream fs = new FileStream("fat.bin", FileMode.Append);
-                StreamWriter sw = new StreamWriter(fs);
-                string line = "";
-                if (Fat[i].busy)
-                { 
-                    line = "1 " + Fat[i].Name + " " + Fat[i].next.ToString() + " ";
-                    if (Fat[i].isStart)
-                        line += "1";
-                    else
-                        line += "0";
-                }
-                else
-                    line = "0 0 -1 -1";
-                sw.WriteLine(line);
-                sw.Close();
-                sw.Dispose();
-                fs.Close();
-                fs.Dispose();
-            }
-        }
+        //public void SaveFat()
+        //{
+        //    for (int i = 0; i < 32; i++)
+        //    {
+        //        FileStream fs = new FileStream("fat.bin", FileMode.Append);
+        //        StreamWriter sw = new StreamWriter(fs);
+        //        string line = "";
+        //        if (Fat[i].busy)
+        //        { 
+        //            line = "1 " + Fat[i].Name + " " + Fat[i].next.ToString() + " ";
+        //            if (Fat[i].isStart)
+        //                line += "1";
+        //            else
+        //                line += "0";
+        //        }
+        //        else
+        //            line = "0 0 -1 -1";
+        //        sw.WriteLine(line);
+        //        sw.Close();
+        //        sw.Dispose();
+        //        fs.Close();
+        //        fs.Dispose();
+        //    }
+        //}
 
         //在fat表中找到文件起始块。
-        public int FindinFat(string n)
-        {
-            for(int i=0;i<32;i++)
-            {
-                if (Fat[i].isStart && Fat[i].Name == n)
-                    return i;
-            }
-            return -1;
-        }
+        //public int FindinFat(string n)
+        //{
+        //    for(int i=0;i<32;i++)
+        //    {
+        //        if (Fat[i].isStart && Fat[i].Name == n)
+        //            return i;
+        //    }
+        //    return -1;
+        //}
 
         //给文件分配块数
-        public int CreateFile(int size,string name)
-        {
-            if (emptyblock == 0)
-                return -1;
+        //public int CreateFile(int size,string name)
+        //{
+        //    if (emptyblock == 0)
+        //        return -1;
 
-            int num_block;//所需块数
-            if(size%32!=0)
-            {
-                num_block = size / 32 + 1;
-            }
-            else
-            {
-                num_block = size / 32;
-            }
-            int prev = -1;
-            int start = -1;
-            if (num_block <= emptyblock)
-            {
-                for (int i = 0, j = 0; j < num_block; i++)
-                {
-                    if (Fat[i].busy==false)
-                    {
-                        Fat[i].busy = true;
-                        Fat[i].Name = name;
-                        Fat[i].next = -1;
-                        if (prev != -1)
-                        { 
-                            Fat[prev].next = i;
-                            Fat[i].isStart = false;
-                        }
-                        else
-                        { 
-                            start = i;
-                            Fat[i].isStart = true;
-                        }
-                        prev = i;
-                        j++;
-                    }
-                }
-                emptyblock -= num_block;
-            }
-            return start;
-        }
+        //    int num_block;//所需块数
+        //    if(size%32!=0)
+        //    {
+        //        num_block = size / 32 + 1;
+        //    }
+        //    else
+        //    {
+        //        num_block = size / 32;
+        //    }
+        //    int prev = -1;
+        //    int start = -1;
+        //    if (num_block <= emptyblock)
+        //    {
+        //        for (int i = 0, j = 0; j < num_block; i++)
+        //        {
+        //            if (Fat[i].busy==false)
+        //            {
+        //                Fat[i].busy = true;
+        //                Fat[i].Name = name;
+        //                Fat[i].next = -1;
+        //                if (prev != -1)
+        //                { 
+        //                    Fat[prev].next = i;
+        //                    Fat[i].isStart = false;
+        //                }
+        //                else
+        //                { 
+        //                    start = i;
+        //                    Fat[i].isStart = true;
+        //                }
+        //                prev = i;
+        //                j++;
+        //            }
+        //        }
+        //        emptyblock -= num_block;
+        //    }
+        //    return start;
+        //}
 
         //添加目录
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -407,7 +415,7 @@ namespace FileSystem
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Save(treeView1.Nodes);
-            SaveFat();
+            MemManager.SaveFat();
         }
 
         //删除文件
@@ -427,23 +435,24 @@ namespace FileSystem
             }
             if (treeView1.SelectedNode.ToolTipText == "1")
             {
-                int now = FindinFat(treeView1.SelectedNode.Text);
-                int pre = now;
-                while (Fat[now].next != -1)
-                {
-                    pre = now;
-                    now = Fat[now].next;
-                    Fat[pre].isStart = false;
-                    Fat[pre].Name = "";
-                    Fat[pre].next = -1;
-                    Fat[pre].busy = false;
-                    emptyblock++;
-                }
-                Fat[now].isStart = false;
-                Fat[now].Name = "";
-                Fat[now].next = -1;
-                Fat[now].busy = false;
-                emptyblock++;
+                //int now = FindinFat(treeView1.SelectedNode.Text);
+                //int pre = now;
+                //while (Fat[now].next != -1)
+                //{
+                //    pre = now;
+                //    now = Fat[now].next;
+                //    Fat[pre].isStart = false;
+                //    Fat[pre].Name = "";
+                //    Fat[pre].next = -1;
+                //    Fat[pre].busy = false;
+                //    emptyblock++;
+                //}
+                //Fat[now].isStart = false;
+                //Fat[now].Name = "";
+                //Fat[now].next = -1;
+                //Fat[now].busy = false;
+                //emptyblock++;
+                MemManager.ReleaseFile(treeView1.SelectedNode.Text);
                 File.Delete(treeView1.SelectedNode.Text);
             }
             else
@@ -477,16 +486,23 @@ namespace FileSystem
                     tmp.ToolTipText = "1";
                     //在TreeView组件中加入子节点
                     tmp.size = 0;
-                    for (int i = 0; i < 32;i++ )
+                    //for (int i = 0; i < 32;i++ )
+                    //{
+                    //    if(Fat[i].Name==tmp.Text)
+                    //    {
+                    //        MessageBox.Show("有重复命名的文件", "提示信息",
+                    //    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    //        return;
+                    //    }
+                    //}
+                    //tmp.address = CreateFile(1, tmp.Text);
+                    if (!MemManager.CanCreate(tmp.Text))
                     {
-                        if(Fat[i].Name==tmp.Text)
-                        {
-                            MessageBox.Show("有重复命名的文件", "提示信息",
+                        MessageBox.Show("有重复命名的文件", "提示信息",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            return;
-                        }
+                        return;
                     }
-                    tmp.address = CreateFile(1, tmp.Text);
+                    tmp.address = MemManager.AllocateFile(1, tmp.Text);
                     if (tmp.address >= 0)
                     {
                         treeView1.SelectedNode.Nodes.Add(tmp);
@@ -546,7 +562,7 @@ namespace FileSystem
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            label1.Text = "磁盘总块数32（每块32B)\n磁盘剩余块数："+emptyblock.ToString();
+            label1.Text = "磁盘总块数32（每块32B)\n磁盘剩余块数：" + MemManager.returnEmpty().ToString();
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -555,20 +571,21 @@ namespace FileSystem
             sw.WriteLine(textBox3.Text);
             sw.Close();
             sw.Dispose();
-            for(int i=0;i<32;i++)
-            {
-                if(Fat[i].Name==openFileName)
-                {
-                    Fat[i].isStart = false;
-                    Fat[i].Name = "";
-                    Fat[i].next = -1;
-                    Fat[i].busy = false;
-                    emptyblock++;
-                }
-            }
+            //for(int i=0;i<32;i++)
+            //{
+            //    if(Fat[i].Name==openFileName)
+            //    {
+            //        Fat[i].isStart = false;
+            //        Fat[i].Name = "";
+            //        Fat[i].next = -1;
+            //        Fat[i].busy = false;
+            //        emptyblock++;
+            //    }
+            //}
             FileInfo fi = new FileInfo(openFileName);
             int size = (Int32)fi.Length;
-            CreateFile(size,openFileName);
+            //CreateFile(size, openFileName);
+            MemManager.AppendFile(openFileName, size);
             textBox3.Clear();
             button5.Enabled = true;
             button6.Enabled = false;
