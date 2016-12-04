@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Drawing;
 namespace FileSystem
 {
     class FileIterater
@@ -17,12 +17,19 @@ namespace FileSystem
         public FileIterater last;
         public FileIterater next;
         public FileIterater father;
+        
+
 
         FileIterater(bool file,int id)
         {
             isdeleted = false;
             isfile = file;
             index = id;
+        }
+
+        public void addNode()
+        {
+
         }
 
         public bool isFile()

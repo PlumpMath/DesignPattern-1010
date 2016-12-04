@@ -45,6 +45,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.buttonsearch = new System.Windows.Forms.Button();
             this.textBoxSearch = new System.Windows.Forms.TextBox();
+            this.button7 = new System.Windows.Forms.Button();
+            this.button8 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // treeView1
@@ -122,7 +124,7 @@
             // 
             // labelFile
             // 
-            this.labelFile.Location = new System.Drawing.Point(436, 157);
+            this.labelFile.Location = new System.Drawing.Point(436, 186);
             this.labelFile.Name = "labelFile";
             this.labelFile.Size = new System.Drawing.Size(187, 18);
             this.labelFile.TabIndex = 7;
@@ -142,10 +144,10 @@
             // 
             // textBox3
             // 
-            this.textBox3.Location = new System.Drawing.Point(436, 178);
+            this.textBox3.Location = new System.Drawing.Point(436, 207);
             this.textBox3.Multiline = true;
             this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(187, 151);
+            this.textBox3.Size = new System.Drawing.Size(187, 122);
             this.textBox3.TabIndex = 9;
             // 
             // button6
@@ -191,11 +193,33 @@
             this.textBoxSearch.Size = new System.Drawing.Size(100, 21);
             this.textBoxSearch.TabIndex = 13;
             // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(432, 160);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(100, 23);
+            this.button7.TabIndex = 14;
+            this.button7.Text = "撤销";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
+            // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(540, 161);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(81, 23);
+            this.button8.TabIndex = 15;
+            this.button8.Text = "清空回收站";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.button8_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(624, 359);
+            this.Controls.Add(this.button8);
+            this.Controls.Add(this.button7);
             this.Controls.Add(this.textBoxSearch);
             this.Controls.Add(this.buttonsearch);
             this.Controls.Add(this.label1);
@@ -235,7 +259,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button buttonsearch;
         private System.Windows.Forms.TextBox textBoxSearch;
-
+        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button button8;
     }
 }
 

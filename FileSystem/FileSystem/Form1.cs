@@ -42,6 +42,7 @@ namespace FileSystem
         static string newPathName;
         static string newFileName;
         static string openFileName;
+        private List<FileIterater> iteraterList = new List<FileIterater>();
         //static Block[] Fat = new Block[32];
         //static int emptyblock;//磁盘空闲块
 
@@ -148,7 +149,29 @@ namespace FileSystem
             public int address;
             public int size;
         }
-        
+        public class FileIterater
+        {
+            public bool isfile;//是否为文件
+            public bool isdeleted;//标示是否被删除
+            public string text;
+
+            public TreeNode node;
+            public TreeNode father;
+            public FileIterater(TreeNode Node, TreeNode Father, bool file, bool deleted)
+            {
+                if (file) {
+                    StreamReader sr = new StreamReader(Node.Text);
+                    text = sr.ReadToEnd();
+                    sr.Close();
+                    sr.Dispose();
+                }
+                node = Node;
+                father = Father;
+                isfile = file;
+                isdeleted = deleted;
+            }
+        }
+
         //寻找名为s的目录
         public TreeNode FindTreeViewNode(TreeNodeCollection node,string s)
         {
@@ -281,7 +304,7 @@ namespace FileSystem
                 Save(n.Nodes);
             }   
         }
-    
+
         //存储磁盘fat表
         //public void SaveFat()
         //{
@@ -364,9 +387,9 @@ namespace FileSystem
         //    return start;
         //}
 
-        //添加目录
 
-        private void button1_Click(object sender, EventArgs e)
+
+        private void button1_Click(object sender, EventArgs e)         //添加目录
         {
             if (treeView1.SelectedNode == null)
             {
@@ -398,6 +421,8 @@ namespace FileSystem
                     treeView1.SelectedNode.Nodes.Add(tmp);
                     treeView1.SelectedNode = tmp;
                     textBox1.Text = "";
+                    FileIterater fileIterater = new FileIterater(tmp, treeView1.SelectedNode, false, false);
+                    iteraterList.Add(fileIterater);
                 }
             } 
         }
@@ -452,12 +477,19 @@ namespace FileSystem
                 //Fat[now].next = -1;
                 //Fat[now].busy = false;
                 //emptyblock++;
-                MemManager.ReleaseFile(treeView1.SelectedNode.Text);
-                File.Delete(treeView1.SelectedNode.Text);
+                //
+                FileIterater fileIterater = new FileIterater(treeView1.SelectedNode, treeView1.SelectedNode.Parent, true, true);
+                iteraterList.Add(fileIterater);
+                //
+                
             }
             else
-                DeleteFile(treeView1.SelectedNode.Nodes);
-            DeletePath(treeView1.SelectedNode);
+            {
+                FileIterater fileIterater = new FileIterater(treeView1.SelectedNode, treeView1.SelectedNode.Parent, false, true);
+                iteraterList.Add(fileIterater);
+            }
+                //DeleteFile(treeView1.SelectedNode.Nodes);
+            //DeletePath(treeView1.SelectedNode);
             treeView1.Nodes.Remove(treeView1.SelectedNode);
         }
 
@@ -507,6 +539,7 @@ namespace FileSystem
                     {
                         treeView1.SelectedNode.Nodes.Add(tmp);
                         treeView1.SelectedNode = tmp;
+
                         FileStream NewText = File.Create(tmp.Text);
                         NewText.Close();
                     }
@@ -516,6 +549,8 @@ namespace FileSystem
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     textBox2.Text = "";
+                    FileIterater fileIterater = new FileIterater(tmp, treeView1.SelectedNode, true, false);
+                    iteraterList.Add(fileIterater);
                 }
             } 
         }
@@ -613,6 +648,75 @@ namespace FileSystem
                MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
+        }
+
+        //撤销上一步操作
+        private void button7_Click(object sender, EventArgs e)
+        {
+            if (iteraterList.Count==0)
+            {
+                MessageBox.Show("无可撤销的操作", "Tip",
+               MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            FileIterater fileIterater = iteraterList[iteraterList.Count - 1];
+            //撤销对文件的删除
+            if (fileIterater.isfile && fileIterater.isdeleted)
+            {
+                TreeNode father = fileIterater.father;
+                TreeNode node = fileIterater.node;
+                MemManager.AllocateFile(1, node.Text);
+                father.Nodes.Add(node);
+                FileStream NewText = File.Create(node.Text);
+                NewText.Close();
+                StreamWriter sw = new StreamWriter(node.Text);
+                sw.WriteLine(fileIterater.text);
+                sw.Close();
+                sw.Dispose();
+                NewText.Close();
+                iteraterList.RemoveAt(iteraterList.Count - 1);
+            }
+            //撤销对目录的删除
+            else if(!fileIterater.isfile && fileIterater.isdeleted)
+            {
+                TreeNode father = fileIterater.father;
+                TreeNode node = fileIterater.node;
+                father.Nodes.Add(node);
+                iteraterList.RemoveAt(iteraterList.Count - 1);
+            }
+            //撤销文件的创建，释放内存且不可逆
+            else if (fileIterater.isfile && !fileIterater.isdeleted)
+            {
+                TreeNode father = fileIterater.father;
+                TreeNode node = fileIterater.node;
+                MemManager.ReleaseFile(treeView1.SelectedNode.Text);
+                File.Delete(treeView1.SelectedNode.Text);
+                father.Nodes.Remove(node);
+                iteraterList.RemoveAt(iteraterList.Count - 1);
+            }
+            //撤销文件夹的创建
+            else if((!fileIterater.isfile && !fileIterater.isdeleted))
+            {
+                TreeNode father = fileIterater.father;
+                TreeNode node = fileIterater.node;
+                father.Nodes.Remove(node);
+                iteraterList.RemoveAt(iteraterList.Count - 1);
+            }
+        }
+        //清空操作
+        private void button8_Click(object sender, EventArgs e)
+        {
+            //如果有删除目录的操作，先释放内存
+            foreach(FileIterater itr in iteraterList)
+            {
+                if (!itr.isfile && itr.isdeleted)
+                {
+                    TreeNode tmp = itr.node;
+                    DeleteFile(tmp.Nodes);
+                    DeletePath(tmp);
+                }
+            }
+            iteraterList.Clear();
         }
     }
 }
