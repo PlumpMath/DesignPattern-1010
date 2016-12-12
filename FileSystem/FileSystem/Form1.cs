@@ -440,8 +440,39 @@ namespace FileSystem
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Save(treeView1.Nodes);
+            ClearUndo();
             MemManager.SaveFat();
         }
+
+        //////////////
+        //监听器
+        /////////////
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            label1.Text = "磁盘总块数32（每块32B)\n磁盘剩余块数：" + MemManager.returnEmpty().ToString();
+        }
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+            newFileName = textBox2.Text;
+        }
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (treeView1.SelectedNode.ToolTipText == "1")
+            {
+                button1.Enabled = false;
+                button4.Enabled = false;
+            }
+            else
+            {
+                button1.Enabled = true;
+                button4.Enabled = true;
+            }
+        }
+
+
+        //////////////
+        //buttons
+        /////////////
 
         //删除文件
         private void button3_Click(object sender, EventArgs e)
@@ -555,25 +586,6 @@ namespace FileSystem
             } 
         }
 
-        private void textBox2_TextChanged(object sender, EventArgs e)
-        {
-            newFileName = textBox2.Text;
-        }
-
-        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            if(treeView1.SelectedNode.ToolTipText=="1")
-            {
-                button1.Enabled = false;
-                button4.Enabled = false;
-            }
-            else
-            {
-                button1.Enabled = true;
-                button4.Enabled = true;
-            }
-        }
-
         //打开读写文件
         private void button5_Click(object sender, EventArgs e)
         {
@@ -595,11 +607,7 @@ namespace FileSystem
 
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            label1.Text = "磁盘总块数32（每块32B)\n磁盘剩余块数：" + MemManager.returnEmpty().ToString();
-        }
-
+        //关闭文件
         private void button6_Click(object sender, EventArgs e)
         {
             StreamWriter sw = new StreamWriter(openFileName);
@@ -633,6 +641,7 @@ namespace FileSystem
 
         }
 
+        //搜索文件
         private void buttonsearch_Click(object sender, EventArgs e)
         {
             treeView1.SelectedNode=FindFile(treeView1.Nodes,textBoxSearch.Text);
@@ -665,7 +674,7 @@ namespace FileSystem
             {
                 TreeNode father = fileIterater.father;
                 TreeNode node = fileIterater.node;
-                MemManager.AllocateFile(1, node.Text);
+                //MemManager.AllocateFile(1, node.Text);
                 father.Nodes.Add(node);
                 FileStream NewText = File.Create(node.Text);
                 NewText.Close();
@@ -703,20 +712,31 @@ namespace FileSystem
                 iteraterList.RemoveAt(iteraterList.Count - 1);
             }
         }
-        //清空操作
-        private void button8_Click(object sender, EventArgs e)
+
+        private void ClearUndo()
         {
             //如果有删除目录的操作，先释放内存
-            foreach(FileIterater itr in iteraterList)
+            foreach (FileIterater itr in iteraterList)
             {
                 if (!itr.isfile && itr.isdeleted)
                 {
                     TreeNode tmp = itr.node;
+
                     DeleteFile(tmp.Nodes);
                     DeletePath(tmp);
                 }
+                if(itr.isfile && itr.isdeleted)
+                {
+                    MemManager.ReleaseFile(itr.node.Text);
+                }
             }
             iteraterList.Clear();
+        }
+
+        //清空操作
+        private void button8_Click(object sender, EventArgs e)
+        {
+            ClearUndo();
         }
     }
 }

@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+
 namespace FileSystem
 {
+    //迭代器模式，
+    //主要用于缓存command
     class FileIterater
     {
         private bool isfile;//是否为文件
@@ -25,11 +28,6 @@ namespace FileSystem
             isdeleted = false;
             isfile = file;
             index = id;
-        }
-
-        public void addNode()
-        {
-
         }
 
         public bool isFile()
