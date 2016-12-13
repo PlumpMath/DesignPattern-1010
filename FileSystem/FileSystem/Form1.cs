@@ -659,57 +659,78 @@ namespace FileSystem
             }
         }
 
+        //撤销对文件的删除
+        private void recoverFile(FileIterater fileIterater)
+        {
+            TreeNode father = fileIterater.father;
+            TreeNode node = fileIterater.node;
+            //MemManager.AllocateFile(1, node.Text);
+            father.Nodes.Add(node);
+            FileStream NewText = File.Create(node.Text);
+            NewText.Close();
+            StreamWriter sw = new StreamWriter(node.Text);
+            sw.WriteLine(fileIterater.text);
+            sw.Close();
+            sw.Dispose();
+            NewText.Close();
+            iteraterList.RemoveAt(iteraterList.Count - 1);
+        }
+        //撤销对目录的删除
+        private void recoverFolder(FileIterater fileIterater)
+        {
+            TreeNode father = fileIterater.father;
+            TreeNode node = fileIterater.node;
+            father.Nodes.Add(node);
+            iteraterList.RemoveAt(iteraterList.Count - 1);
+        }
+        //撤销文件的创建，释放内存且此操作不可逆
+        private void undoFileCreation(FileIterater fileIterater)
+        {
+            TreeNode father = fileIterater.father;
+            TreeNode node = fileIterater.node;
+            MemManager.ReleaseFile(treeView1.SelectedNode.Text);
+            File.Delete(treeView1.SelectedNode.Text);
+            father.Nodes.Remove(node);
+            iteraterList.RemoveAt(iteraterList.Count - 1);
+        }
+        private void undoFolderCreation(FileIterater fileIterater)
+        {
+            TreeNode father = fileIterater.father;
+            TreeNode node = fileIterater.node;
+            father.Nodes.Remove(node);
+            iteraterList.RemoveAt(iteraterList.Count - 1);
+        }
+
         //撤销上一步操作
         private void button7_Click(object sender, EventArgs e)
         {
+            //检查之前是否有操作
             if (iteraterList.Count==0)
             {
                 MessageBox.Show("无可撤销的操作", "Tip",
-               MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             FileIterater fileIterater = iteraterList[iteraterList.Count - 1];
             //撤销对文件的删除
             if (fileIterater.isfile && fileIterater.isdeleted)
             {
-                TreeNode father = fileIterater.father;
-                TreeNode node = fileIterater.node;
-                //MemManager.AllocateFile(1, node.Text);
-                father.Nodes.Add(node);
-                FileStream NewText = File.Create(node.Text);
-                NewText.Close();
-                StreamWriter sw = new StreamWriter(node.Text);
-                sw.WriteLine(fileIterater.text);
-                sw.Close();
-                sw.Dispose();
-                NewText.Close();
-                iteraterList.RemoveAt(iteraterList.Count - 1);
+                recoverFile(fileIterater);
             }
             //撤销对目录的删除
             else if(!fileIterater.isfile && fileIterater.isdeleted)
             {
-                TreeNode father = fileIterater.father;
-                TreeNode node = fileIterater.node;
-                father.Nodes.Add(node);
-                iteraterList.RemoveAt(iteraterList.Count - 1);
+                recoverFolder(fileIterater);
             }
-            //撤销文件的创建，释放内存且不可逆
+            //撤销文件的创建，释放内存且不此操作可逆
             else if (fileIterater.isfile && !fileIterater.isdeleted)
             {
-                TreeNode father = fileIterater.father;
-                TreeNode node = fileIterater.node;
-                MemManager.ReleaseFile(treeView1.SelectedNode.Text);
-                File.Delete(treeView1.SelectedNode.Text);
-                father.Nodes.Remove(node);
-                iteraterList.RemoveAt(iteraterList.Count - 1);
+                undoFileCreation(fileIterater);
             }
             //撤销文件夹的创建
             else if((!fileIterater.isfile && !fileIterater.isdeleted))
             {
-                TreeNode father = fileIterater.father;
-                TreeNode node = fileIterater.node;
-                father.Nodes.Remove(node);
-                iteraterList.RemoveAt(iteraterList.Count - 1);
+                undoFolderCreation(fileIterater);
             }
         }
 

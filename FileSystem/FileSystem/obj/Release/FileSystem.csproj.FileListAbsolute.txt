@@ -25,3 +25,12 @@ C:\Users\Polotin\Desktop\DesignPattern-master\DesignPattern-master\FileSystem\Fi
 C:\Users\Polotin\Desktop\DesignPattern-master\DesignPattern-master\FileSystem\FileSystem\obj\Release\FileSystem.Form1.resources
 C:\Users\Polotin\Desktop\DesignPattern-master\DesignPattern-master\FileSystem\FileSystem\obj\Release\FileSystem.Properties.Resources.resources
 C:\Users\Polotin\Desktop\DesignPattern-master\DesignPattern-master\FileSystem\FileSystem\obj\Release\FileSystem.csproj.GenerateResource.Cache
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\bin\Release\FileSystem.exe.config
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\obj\Release\FileSystem.exe
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\obj\Release\FileSystem.pdb
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\bin\Release\FileSystem.exe
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\bin\Release\FileSystem.pdb
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\obj\Release\FileSystem.csprojResolveAssemblyReference.cache
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\obj\Release\FileSystem.Form1.resources
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\obj\Release\FileSystem.Properties.Resources.resources
+C:\Users\Polotin\Documents\DesignPattern\FileSystem\FileSystem\obj\Release\FileSystem.csproj.GenerateResource.Cache
