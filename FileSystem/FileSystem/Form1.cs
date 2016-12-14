@@ -688,8 +688,8 @@ namespace FileSystem
         {
             TreeNode father = fileIterater.father;
             TreeNode node = fileIterater.node;
-            MemManager.ReleaseFile(treeView1.SelectedNode.Text);
-            File.Delete(treeView1.SelectedNode.Text);
+            MemManager.ReleaseFile(node.Text);
+            File.Delete(node.Text);
             father.Nodes.Remove(node);
             iteraterList.RemoveAt(iteraterList.Count - 1);
         }
